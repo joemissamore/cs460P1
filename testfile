@@ -1,0 +1,24 @@
+identifier ident_1 function
+0 123 1.1 -1.1 +1.1 12. -.1
+"Hello World"
+
+cons if cond display newline and or not define else newline 
+car cdr cadr cddr number cadddddddddr
+number? list? zero? string? null?
++ - / * modulo round
+
+
+"Another string lit"
+= > < >= <= "Why not"
+( ) 'a"Im going to hammer thisout"
+9=6
+9.-8
+9 - 8
+
+01231.1-1.1+1.112.-.1
+number?list?$zero?null?string?
+
+cassssss
+cad
+<>=<===>identifier?
+strlit,
