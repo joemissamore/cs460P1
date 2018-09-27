@@ -55,6 +55,8 @@ enum token_type { NONE = -1,
 					NULLP_T,
 					STRINGP_T,
 
+
+
 					NUM_TOKENS
 };
 
@@ -64,17 +66,18 @@ class LexicalAnalyzer
     public:
 	LexicalAnalyzer (char * filename);
 	~LexicalAnalyzer ();
-	token_type GetToken ();
+	token_type GetToken (); // return a single line
 	string GetTokenName (token_type t) const;
 	string GetLexeme () const;
 	void ReportError (const string & msg);
 	// Function added after framework
-	token_type PredicatesKeywordsProcessor(string lex);
+	token_type KeywordProcessor(string lex);
+	token_type PredicateProcessor(string lex);
 	token_type ProcessSTRLIT_T();
 	
     private:
 	ifstream input;
-	ofstream listingFile;
+	ofstream listingFile; // .lst file
 	ofstream tokenFile;
 	ofstream debugFile;
 	token_type token;

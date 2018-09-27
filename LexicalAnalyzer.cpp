@@ -6,6 +6,29 @@
 
 using namespace std;
 
+/*
+	GetToken: to return one token 
+		synchronization err
+	
+	spaces
+		Feed in char at a time? 
+		
+		capture everything up to a space
+		try to identify it
+		if fails {
+			pass each individual char
+		}
+
+		ERR - just lexical ERR
+		EOF
+
+
+
+
+	id?
+
+*/
+
 static string token_names[] = {	
 					"EOF_T",
 								
@@ -64,41 +87,39 @@ static string token_names[] = {
 LexicalAnalyzer::LexicalAnalyzer (char * filename)
 {
 	input.open(filename);
-	// while(input >> noskipws >>  lexeme) {
-	// 	cout << "lexeme: " << lexeme << endl;
-	// 	if (lexeme[0] == '"') {
-	// 		string temp;
-	// 		do {
-	// 			input >> temp;
-	// 			lexeme += temp;
-	// 			cout << temp; 
-	// 		} while(temp[temp.length() - 1] != '"');
-	// 	}
+	listingFile.open("P1-0.lst");
+	tokenFile.open("P1-0.p1");
 
-	// 	token = GetToken();
-	// 	cout << GetTokenName(token) << '\t' << lexeme << endl;
-	// }
-
-		
-			
-	
-	
-	
-	
 	linenum = 1;
-	string line;
+
 	while (getline(input, line))
 	{
 		pos = 0;
-		
+		int col = 0;
+		int state = 0;
+		// 
 		while (pos < line.length()) {
 			
 			// skip over all white spaces
-			// for(; pos < line.length() && line[pos] == ' '; pos++);
 			for(; pos < line.length() && (line[pos] == ' '); pos++);
 			if (line[pos] != '"') {
 				for (; pos < line.length() && line[pos] != ' '; pos++) {
-					lexeme += line[pos];
+					col = getCol(line[pos], state);
+					state = tableDriver[state][col];
+					if (state == 7) { // need to check if its a predicate
+						token_type ttype = PredicateProcessor(lexeme + line[pos]);
+						if (ttype == ERROR_T) {
+							pos--; // need to back up
+							break;
+						}
+					}
+					if (state != ERR) {
+						lexeme += line[pos];
+					}
+					else { // its an err
+						lexeme += line[pos];
+					}
+
 				}
 			}
 			else if (line[pos] == '"') {
@@ -112,15 +133,18 @@ LexicalAnalyzer::LexicalAnalyzer (char * filename)
 			}
 
 			token = GetToken();
-			// This line was printing unexpected tabs
+			// This line was printing unexpected tabsG
 			cout << setw(20) << left << GetTokenName(token) << lexeme << endl;
+			tokenFile << setw(20) << left << GetTokenName(token) << lexeme << endl;
 			// printf("%s\t\t%s\n", GetTokenName(token).c_str(), lexeme.c_str());
+			
 			lexeme = "";
 			pos++; // increment past the position of where the for loop left off.
 		}
-		
-		
 
+		listingFile << "\t" << linenum++ << ": " << line << endl;
+		
+		
 	}
 
 
@@ -130,17 +154,50 @@ LexicalAnalyzer::~LexicalAnalyzer ()
 {
 	// This function will complete the execution of the lexical analyzer class
 	input.close();
+	listingFile.close();
+	tokenFile.close();
 }
 
 token_type LexicalAnalyzer::GetToken ()
 {
 	int state = 0;
 	int col = 0;
+	int tempState;
+	int tempCol;
+	string tempLex = "";
+	// Do don not execute for loop if state is 11
+	// State 11 == STRLIT_T
 	for (int i=0; i < lexeme.size() && state != ERR && state != 11; i++) {
 		col = getCol(lexeme[i], state);
 		state = tableDriver[state][col];
+		tempLex += lexeme[i];
+		// PEEK
+		// Peek at the next char and see if it throws an err.
+		//TODO: Check to make sure not EOL
+		// The only state that needs validation is 
+		// 		predicate
+		//TODO: If peek reveals a question mark,
+		// test to see if it its a predicate
+		if (lexeme[i + 1] == '?') {
+			token_type ttype = PredicateProcessor(lexeme + lexeme[i + 1]);
+			if (ttype == ERROR_T) {
+				pos = pos - (pos - i);
+				break;
+			}
 
+		}
+
+
+		// Checking for ERR
+		// tempCol = getCol(lexeme[i+1], state);
+		// tempState = tableDriver[state][tempCol];
 		
+		// if (tempState == ERR){
+		// 	// synchronize pos with i...
+		// 	pos = pos - (pos - i);
+		// 	lexeme = tempLex;
+		// 	cout << "YO, TEMP STATE HAS AN ERR" << endl; 
+		// }
 	}
 	// cout << "state: " << state << endl;
 	if (state != ERR) {
@@ -148,9 +205,9 @@ token_type LexicalAnalyzer::GetToken ()
 			case 3:
 				return LISTOP_T;
 			case 6:
-				return PredicatesKeywordsProcessor(lexeme);
+				return KeywordProcessor(lexeme);
 			case 7:
-				return PredicatesKeywordsProcessor(lexeme);
+				return PredicateProcessor(lexeme);
 			case 4: 
 				return NUMLIT_T;
 			case 5: 
@@ -185,7 +242,7 @@ token_type LexicalAnalyzer::GetToken ()
 				return STRLIT_T;
 		}
 	}
-	return NONE;
+	return ERROR_T;
 }
 
 string LexicalAnalyzer::GetTokenName (token_type t) const
@@ -209,8 +266,9 @@ void LexicalAnalyzer::ReportError (const string & msg)
 
 
 // Function implementation added after framework
-
-token_type LexicalAnalyzer::PredicatesKeywordsProcessor(string lex) {
+// Logic had to be split up because was returning a predicate as a possible 
+// identifier
+token_type LexicalAnalyzer::KeywordProcessor(string lex) {
 	map<string, token_type> PKW;
 	// Keywords
 	PKW["if"] = IF_T;
@@ -224,7 +282,17 @@ token_type LexicalAnalyzer::PredicatesKeywordsProcessor(string lex) {
 	PKW["not"] = NOT_T;
 	PKW["define"] = DEFINE_T;
 
-	// Predicated
+	if (PKW[lex] != 0) {
+		return PKW[lex];
+	}
+	// If its not a keyword then 
+	// it must be an IDENT_T
+	return IDENT_T;
+}
+
+token_type LexicalAnalyzer::PredicateProcessor(string lex) {
+	// Predicate
+	map<string, token_type> PKW;
 	PKW["number?"] = NUMBERP_T;
 	PKW["list?"] = LISTP_T;
 	PKW["zero?"] = ZEROP_T;
@@ -239,21 +307,6 @@ token_type LexicalAnalyzer::PredicatesKeywordsProcessor(string lex) {
 		return PKW[lex];
 	}
 
-	// If its not a keyword
-	// or a predicate
-	// then it must be an identifier 
-	return IDENT_T; 
+	
+	return ERROR_T; 
 }
-
-// token_type LexicalAnalyzer::ProcessSTRLIT_T() {
-// 	// cout << "ProcessSTRLIT_T called" << endl;
-// 	string temp; 
-// 	input >> noskipws;
-// 	while (input >> temp) {
-// 		lexeme += temp;
-// 		// cout << "lexeme: "  << lexeme << endl;
-// 		if (temp[temp.length() - 1] == '"') { break; }
-// 	}
-
-// 	return STRLIT_T;
-// }
