@@ -10,4 +10,10 @@ number? list? zero? string? null?
 
 "Another string lit"
 = > < >= <= "Why not"
-( ) '
+( ) 'a"Im going to hammer thisout"
+9=6
+9.-8
+9 - 8
+
+01231.1-1.1+1.112.-.1
+number?list?$zero?null?string?

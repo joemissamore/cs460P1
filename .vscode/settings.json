@@ -13,6 +13,7 @@
         "typeinfo": "cpp",
         "algorithm": "cpp",
         "locale": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "iomanip": "cpp"
     }
 }

@@ -74,6 +74,7 @@ class LexicalAnalyzer
 	token_type KeywordProcessor(string lex);
 	token_type PredicateProcessor(string lex);
 	token_type ProcessSTRLIT_T();
+	token_type GetTokenType(int);
 	
     private:
 	ifstream input;
