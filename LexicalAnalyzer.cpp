@@ -67,7 +67,7 @@ LexicalAnalyzer::LexicalAnalyzer (char * filename)
 	listingFile.open("P1-0.lst");
 	tokenFile.open("P1-0.p1");
 	
-	token = GetToken();
+	// token = GetToken();
 	
 			
 }
@@ -75,6 +75,7 @@ LexicalAnalyzer::LexicalAnalyzer (char * filename)
 LexicalAnalyzer::~LexicalAnalyzer ()
 {
 	// This function will complete the execution of the lexical analyzer class
+	linenum = 0;
 	input.close();
 	listingFile.close();
 	tokenFile.close();
@@ -82,22 +83,53 @@ LexicalAnalyzer::~LexicalAnalyzer ()
 
 token_type LexicalAnalyzer::GetToken ()
 {	
-	linenum = 1;
+	
 	int col;
 	int state;
 	int prevState;
 	//TODO: Implement with syntactical analyzer in control
-	while (getline(input, line))
-	{
+	// while (getline(input, line))
+
+
+	/* If the line is empty then its the first time
+		the function has been called.
+		If the pos >= line.length() then 
+		we need to grab a newline*/
+	if (line == "" || pos >= line.length()) {
+
+		/* If its a new line we need to burn it */
+		char c;
+		while (input.get(c)) {
+			if (c != '\n') {
+				/* Put the char back */
+				input.unget();
+				break;
+			}
+		}
+
+		/* EOF_T */
+		if (input.eof()) {
+			return EOF_T;
+		}
+
+		getline(input, line);
 		pos = 0;
+		linenum++;
+		// cout << "line: " << line << endl;
+	}
 		col = 0;
 		state = 0;
 		prevState = 0;
 		// 
 		while (pos < line.length()) {
+
 			/* Cause all these checks arent necessary for whitespace 
 				we are going to burn it here */
 			for(; pos < line.length() && (line[pos] == ' '); pos++);
+
+
+			
+
 
 			/* If not STRLIT_T we need to analyze it further */
 			if (line[pos] != '"') {
@@ -179,8 +211,13 @@ token_type LexicalAnalyzer::GetToken ()
 			pos++; // increment past the position of where the for loop left off.
 			state = 0; // reset the state
 
+			// cout << "line: " << line << endl;
+
+
+			return GetTokenType(state);
+
 		}		
-	}
+	// }
 }
 			
 string LexicalAnalyzer::GetTokenName (token_type t) const
