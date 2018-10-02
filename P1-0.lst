@@ -1,0 +1,31 @@
+	1: identifier ident_1 function
+	2: 0 123 1.1 -1.1 +1.1 12. -.1
+	3: "Hello World"
+	4: 
+	5: cons if cond display newline and or not define else newline 
+	6: car cdr cadr cddr number cadddddddddr
+	7: number? list? zero? string? null?
+	8: + - / * modulo round
+	9: 
+	10: 
+	11: "Another string lit"
+	12: = > < >= <= "Why not"
+	13: ( ) 'a"Im going to hammer thisout"
+	14: 9=6
+	15: 9.-8
+	16: 9 - 8
+	17: 
+	18: 01231.1-1.1+1.112.-.1
+Error at 18,17 Invalid character found: .
+	19: number?list?$zero?null?string?
+Error at 19,12 Invalid character found: $
+	20: 
+	21: cassssss
+	22: cad
+Error at 22,3 Invalid character found: d
+	23: <>=<===>identifier?
+Error at 23,18 Invalid character found: ?
+	24: strlit,
+Error at 24,6 Invalid character found: ,
+	25: cartalk
+5 errors found in input file

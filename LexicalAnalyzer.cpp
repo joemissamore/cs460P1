@@ -87,9 +87,6 @@ token_type LexicalAnalyzer::GetToken ()
 	int col;
 	int state;
 	int prevState;
-	//TODO: Implement with syntactical analyzer in control
-	// while (getline(input, line))
-
 
 	/* If the line is empty then its the first time
 		the function has been called.
@@ -105,119 +102,131 @@ token_type LexicalAnalyzer::GetToken ()
 				input.unget();
 				break;
 			}
+			else {
+				/* Write newline */
+				listingFile << '\t' << linenum++ + 1 << ": " << endl;
+			}
+			
+
 		}
 
-		/* EOF_T */
+		/* EOF_T 
+			When eof is reached execute pending tasks */
 		if (input.eof()) {
+			listingFile << errors << " errors found in input file" << endl;
 			return EOF_T;
 		}
 
 		getline(input, line);
 		pos = 0;
-		linenum++;
-		// cout << "line: " << line << endl;
+		listingFile << '\t' << linenum++ + 1 << ": " << line << endl;
 	}
-		col = 0;
-		state = 0;
-		prevState = 0;
-		// 
-		while (pos < line.length()) {
+		
+	/* Begin parsing */
+	col = 0;
+	state = 0;
+	prevState = 0;
+	while (pos < line.length()) {
 
-			/* Cause all these checks arent necessary for whitespace 
-				we are going to burn it here */
-			for(; pos < line.length() && (line[pos] == ' '); pos++);
+		/* Cause all these checks arent necessary for whitespace 
+			we are going to burn it here */
+		for(; pos < line.length() && (line[pos] == ' '); pos++);
 
+		/* If not STRLIT_T we need to analyze it further */
+		if (line[pos] != '"') {
+			/* Parse line until a space is seen*/
+			for (; pos < line.length() && line[pos] != ' '; pos++) {
+				
+				col = getCol(line[pos], state);
+				/* By default if col returns a -1 its an automatic ERR
+					transition */
+				if (col == -1) { 
+					state = ERR; 
+				}
+				else { 
+					state = tableDriver[state][col]; 
+				}
+				/* state 7 is known as the predicate state and is one
+					of the few states that needs additional attention */
+				if (state == 7) { 
+					/* Checks if the `possible` lexeme is a predicate */
+					token_type ttype = PredicateProcessor(lexeme + line[pos]);
 
-			
-
-
-			/* If not STRLIT_T we need to analyze it further */
-			if (line[pos] != '"') {
-				for (; pos < line.length() && line[pos] != ' '; pos++) {
-					// cout << "pos (beginning of loop): " << pos << endl;
-					
-					col = getCol(line[pos], state);
-					// cout << "col: " << col << endl;
-					if (col == -1) { 
-						state = ERR; 
-					}
-					else { 
-						state = tableDriver[state][col]; 
-					}
-					// cout << "state: " << state << ", on: " << line[pos] << endl;
-					/* state 7 is known as the predicate state and is one
-						of the few states that needs additional attention */
-					if (state == 7) { 
-						/* Checks if the lexeme is a predicate */
-						token_type ttype = PredicateProcessor(lexeme + line[pos]);
-						if (ttype == ERROR_T) {
-							state = prevState;
-							pos--; // need to back up
-						}
-						else { // its a valid predicate
-							/* So we will append the current char */
-							lexeme += line[pos];
-						}
-						break;
-					}
-					/* If the current state is ERR and the 
-						lexeme is empty then this is the 
-						error causing char. */
-					else if (state == ERR && lexeme == "") {
-						lexeme += line[pos];
-						break;
-					}
-					/* If the current state is ERR and the 
-						lexeme currently has valid chars in
-						in it. That lexeme needs to be acessed
-						and the error causing char needs to be
-						reevaluated */
-					else if(state == ERR) { 
+					/* If its not a lexeme 
+						need to return its previous state
+						and backup the pos */
+					if (ttype == ERROR_T) {
 						state = prevState;
-						pos--;
-						break;
+						pos--; // need to back up
 					}
-					/* If all is good, well we are going to 
-						continue on. */
-					else {
+					else { // its a valid predicate
+						/* So we will append the current char */
 						lexeme += line[pos];
 					}
-					prevState = state;
-
-				} // end for
-
-				// If a quote is encountered
-			// then it must be a STRLIT_T
-			
-			} else if (line[pos] == '"') {
-				// cout << "STRLIT" << endl;
-				lexeme = line[pos];
-				pos++; // need to increment past the double quote or
-						// the coming for loop wont exec.
-				for( ; pos < line.length() && line[pos] != '"'; pos++ ) {
+					break;
+				}
+				/* If the current state is ERR and the 
+					lexeme is empty then this is the 
+					error causing char. */
+				else if (state == ERR && lexeme == "") {
+					lexeme += line[pos];
+					break;
+				}
+				/* If the current state is ERR and the 
+					lexeme currently has valid chars in
+					in it. That lexeme needs to be acessed
+					and the error causing char needs to be
+					reevaluated */
+				else if(state == ERR) { 
+					state = prevState;
+					pos--;
+					break;
+				}
+				/* If all is good, well we are going to 
+					continue on. */
+				else {
 					lexeme += line[pos];
 				}
-				lexeme += '"';
-				/*STRLIT_T*/
-				state = 12;
+				prevState = state;
+
+			} // end for
+
+		/* If a quote is encountered
+			then it must be a STRLIT_T */
+		} else if (line[pos] == '"') {
+			lexeme = line[pos];
+			pos++; // need to increment past the double quote or
+					// the coming for loop wont exec.
+			for( ; pos < line.length() && line[pos] != '"'; pos++ ) {
+				lexeme += line[pos];
 			}
-			token = GetTokenType(state);
+			lexeme += '"';
+			/*STRLIT_T*/
+			state = 12;
+		}
+		token = GetTokenType(state);
 
+		if (token == ERROR_T) {
+			/* Report the error */
+			string strErr = "Error at ";
+			strErr += to_string(linenum);
+			strErr += ",";
+			strErr += to_string(pos);
+			strErr += " Invalid character found: ";
+			strErr += lexeme[lexeme.length() - 1];
+			errors++;
+			ReportError(strErr);
+		}
 
-			cout << setw(20) << left << GetTokenName(token) << lexeme << endl;
-			tokenFile << setw(20) << left << GetTokenName(token) << lexeme << endl;
-			
-			lexeme = ""; // reset lexeme
-			pos++; // increment past the position of where the for loop left off.
-			state = 0; // reset the state
+		tokenFile << setw(20) << left << GetTokenName(token) << lexeme << endl;
 
-			// cout << "line: " << line << endl;
+		lexeme = ""; // reset lexeme
+		pos++; // increment past the position of where the for loop left off.
+		state = 0; // reset the state
 
+		return token;
 
-			return GetTokenType(state);
-
-		}		
-	// }
+	}		
 }
 			
 string LexicalAnalyzer::GetTokenName (token_type t) const
@@ -237,6 +246,7 @@ string LexicalAnalyzer::GetLexeme () const
 void LexicalAnalyzer::ReportError (const string & msg)
 {
 	// This function will be called to write an error message to a file
+	listingFile << msg << endl;
 }
 
 
