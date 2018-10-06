@@ -1,6 +1,9 @@
+#include <string.h>
 #include <iomanip>
 #include <cstdlib>
+
 #include "LexicalAnalyzer.h"
+
 
 #include "Table.hpp"
 
@@ -63,19 +66,42 @@ static string token_names[] = {
 
 LexicalAnalyzer::LexicalAnalyzer (char * filename)
 {
+	bool dotReached = false;
+	string filePrefix = "";
+	string fileSuffix = "";
+	for (int i = 0; i < strlen(filename); i++) { 
+		if (filename[i] == '.') {
+			dotReached = true;
+		}
+		else if (!dotReached) {
+			filePrefix += filename[i];
+		}
+		else if (dotReached) {
+			fileSuffix += filename[i];
+		}
+	}
+
+	if (fileSuffix != "ss") { 
+		cout << "Wrong input file suffix" << endl;
+		cout << "Expected file suffix: .ss" << endl;
+		cout << "Exiting..." << endl;
+		exit(1); 
+	}
+
 	input.open(filename);
-	listingFile.open("P1-0.lst");
-	tokenFile.open("P1-0.p1");
 	
-	// token = GetToken();
-	
-			
+	string listingFileName = filePrefix;
+	listingFileName += ".lst";
+	listingFile.open(listingFileName);
+
+	string tokenFileName = filePrefix;
+	tokenFileName += ".p1";
+	tokenFile.open(tokenFileName);			
 }
 
 LexicalAnalyzer::~LexicalAnalyzer ()
 {
 	// This function will complete the execution of the lexical analyzer class
-	linenum = 0;
 	input.close();
 	listingFile.close();
 	tokenFile.close();

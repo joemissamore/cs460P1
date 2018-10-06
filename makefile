@@ -1,7 +1,3 @@
-runTest: P1.out
-	clear;
-	./P1.out testfile
-
 P1.out : Project1.o SetLimits.o LexicalAnalyzer.o SyntacticalAnalyzer.o
 	g++ -g -o P1.out Project1.o SetLimits.o LexicalAnalyzer.o SyntacticalAnalyzer.o
 
@@ -20,15 +16,20 @@ SyntacticalAnalyzer.o : SyntacticalAnalyzer.cpp SyntacticalAnalyzer.h LexicalAna
 clean : 
 	rm *.o P1.out *.gch
 
+
+runTest: P1.out
+	clear;
+	./P1.out testfile.ss
+
 submit : Project1.cpp LexicalAnalyzer.h LexicalAnalyzer.cpp SyntacticalAnalyzer.h SyntacticalAnalyzer.cpp makefile README.txt
-	rm -rf yourlastnameP1
-	mkdir yourlastnameP1
-	cp Project1.cpp yourlastnameP1
-	cp LexicalAnalyzer.h yourlastnameP1
-	cp LexicalAnalyzer.cpp yourlastnameP1
-	cp SyntacticalAnalyzer.h yourlastnameP1
-	cp SyntacticalAnalyzer.cpp yourlastnameP1
-	cp makefile yourlastnameP1
-	cp README.txt yourlastnameP1
-	tar cfvz yourlastnameP1.tgz yourlastnameP1
-	cp yourlastnameP1.tgz ~tiawatts/cs460drop
+	rm -rf missamoreP1
+	mkdir missamoreP1
+	cp Project1.cpp missamoreP1
+	cp LexicalAnalyzer.h missamoreP1
+	cp LexicalAnalyzer.cpp missamoreP1
+	cp SyntacticalAnalyzer.h missamoreP1
+	cp SyntacticalAnalyzer.cpp missamoreP1
+	cp makefile missamoreP1
+	cp README.txt missamoreP1
+	tar cfvz missamoreP1.tgz missamoreP1
+	cp missamoreP1.tgz ~tiawatts/cs460drop

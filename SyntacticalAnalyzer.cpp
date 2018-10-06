@@ -12,6 +12,9 @@ SyntacticalAnalyzer::SyntacticalAnalyzer (char * filename)
 	token_type t;
 	while ((t = lex->GetToken()) != EOF_T)
 	{
+		//TODO:
+		// Should be able to write to a file?
+		//
 		// cout << "t: " << t << endl << endl;
 		// get a token
 		

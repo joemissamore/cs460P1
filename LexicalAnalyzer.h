@@ -70,11 +70,7 @@ class LexicalAnalyzer
 	string GetTokenName (token_type t) const;
 	string GetLexeme () const;
 	void ReportError (const string & msg);
-	// Function added after framework
-	token_type KeywordProcessor(string lex);
-	token_type PredicateProcessor(string lex);
-	token_type ProcessSTRLIT_T();
-	token_type GetTokenType(int);
+
 	
     private:
 	ifstream input;
@@ -87,6 +83,12 @@ class LexicalAnalyzer
 	int pos;
 	string lexeme;
 	int errors;
+
+	// Function added after framework
+	token_type KeywordProcessor(string lex);
+	token_type PredicateProcessor(string lex);
+	token_type ProcessSTRLIT_T();
+	token_type GetTokenType(int);
 };
 	
 #endif
