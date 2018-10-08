@@ -141,6 +141,8 @@ token_type LexicalAnalyzer::GetToken ()
 			When eof is reached execute pending tasks */
 		if (input.eof()) {
 			listingFile << errors << " errors found in input file" << endl;
+			// Print out EOF_T in the token file
+			tokenFile << setw(20) << left << GetTokenName(EOF_T) << endl;
 			return EOF_T;
 		}
 
