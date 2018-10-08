@@ -113,6 +113,7 @@ token_type LexicalAnalyzer::GetToken ()
 	int col;
 	int state;
 	int prevState;
+	bool STRLIT_ERR = false;
 
 	/* If the line is empty then its the first time
 		the function has been called.
@@ -224,24 +225,33 @@ token_type LexicalAnalyzer::GetToken ()
 			pos++; // need to increment past the double quote or
 					// the coming for loop wont exec.
 			for( ; pos < line.length() && line[pos] != '"'; pos++ ) {
+				// Reached eol and cant find end quote return err
+				if (line[pos] == '\r' || line[pos] == '\n') { state = -1; STRLIT_ERR = true; break; }
 				lexeme += line[pos];
 			}
-			lexeme += '"';
-			/*STRLIT_T*/
-			state = 12;
+
+			if (line[pos] == '"') {
+				lexeme += '"';
+				state = 12;
+			}
+			
 		}
 		token = GetTokenType(state);
 
 		if (token == ERROR_T) {
-			/* Report the error */
-			string strErr = "Error at ";
-			strErr += to_string(linenum);
-			strErr += ",";
-			strErr += to_string(pos);
-			strErr += " Invalid character found: ";
-			strErr += lexeme[lexeme.length() - 1];
-			errors++;
-			ReportError(strErr);
+			/* Most likely going to remove this in case of the .lst file writing out the wrong 
+				err. */
+			if (!STRLIT_ERR) {
+				/* Report the error */
+				string strErr = "Error at ";
+				strErr += to_string(linenum);
+				strErr += ",";
+				strErr += to_string(pos);
+				strErr += " Invalid character found: ";
+				strErr += lexeme[lexeme.length() - 1];
+				errors++;
+				ReportError(strErr);
+			}
 		}
 
 		tokenFile << setw(20) << left << GetTokenName(token) << lexeme << endl;
