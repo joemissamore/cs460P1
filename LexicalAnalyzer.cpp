@@ -342,6 +342,8 @@ token_type LexicalAnalyzer::GetTokenType(int state) {
 
 	if (state != ERR) {
 		switch (state){
+			case 2:
+				return IDENT_T;
 			case 3:
 				return LISTOP_T;
 			case 6:
