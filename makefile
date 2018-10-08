@@ -18,8 +18,8 @@ SyntacticalAnalyzer.o : SyntacticalAnalyzer.cpp SyntacticalAnalyzer.h LexicalAna
 
 clean : 
 	rm -f *.o P1.out 
-	rm -rf missamoreP1
-	rm -f missamoreP1.tgz
+	rm -rf TeamfP1
+	rm -f TeamfP1.tgz
 	rm -rf $(output_files)
 
 runTest: P1.out
@@ -27,24 +27,24 @@ runTest: P1.out
 	./P1.out testfile.ss
 
 submission : $(files)
-	rm -rf missamoreP1
-	mkdir missamoreP1
-	cp Project1.cpp missamoreP1
-	cp LexicalAnalyzer.h missamoreP1
-	cp LexicalAnalyzer.cpp missamoreP1
-	cp SyntacticalAnalyzer.h missamoreP1
-	cp SyntacticalAnalyzer.cpp missamoreP1
-	cp Table.hpp missamoreP1
-	cp makefile missamoreP1
-	cp README.txt missamoreP1
+	rm -rf TeamfP1
+	mkdir TeamfP1
+	cp Project1.cpp TeamfP1
+	cp LexicalAnalyzer.h TeamfP1
+	cp LexicalAnalyzer.cpp TeamfP1
+	cp SyntacticalAnalyzer.h TeamfP1
+	cp SyntacticalAnalyzer.cpp TeamfP1
+	cp Table.hpp TeamfP1
+	cp makefile TeamfP1
+	cp README.txt TeamfP1
 
 test: submission SetLimits.h SetLimits.cpp *.ss
-	cp SetLimits.h missamoreP1
-	cp SetLimits.cpp missamoreP1
-	cp *.ss missamoreP1
+	cp SetLimits.h TeamfP1
+	cp SetLimits.cpp TeamfP1
+	cp *.ss TeamfP1
 
 	
 submit : submission
-	tar cfvz missamoreP1.tgz missamoreP1
-	cp missamoreP1.tgz ~tiawatts/cs460drop
+	tar cfvz TeamfP1.tgz TeamfP1
+	cp TeamfP1.tgz ~tiawatts/cs460drop
 
